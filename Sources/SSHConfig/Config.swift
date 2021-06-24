@@ -19,6 +19,12 @@ class Config {
             return kv.value
           }
         }
+        else if let inc = node as? Include {
+          let v = try inc.get(alias:alias, key: key)
+          if !v.isEmpty {
+            return v
+          }
+        }
       }
     }
     return ""
@@ -39,6 +45,10 @@ class Config {
           if lkey == lowerKey {
             all.append(kv.value)
           }
+        }
+        else if let inc = node as? Include {
+          let v = try inc.getAll(alias:alias, key: key)
+          all.append(contentsOf: v)
         }
       }
     }

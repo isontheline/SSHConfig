@@ -1,64 +1,5 @@
 import Foundation
 
-protocol Node {
-  var position: Position { get }
-  func string() -> String
-}
-
-struct Empty: Node {
-  let comment: String
-  let leadingSpace: Int
-  let position: Position
-  
-  func string() -> String {
-    if comment.isEmpty {
-      return ""
-    }
-    
-    return "\(String(repeating: " ", count: leadingSpace))#\(comment)"
-  }
-}
-
-
-struct KV: Node {
-  let key: String
-  var value: String
-  let comment: String
-  let hasEquals: Bool
-  let leadingSpace: Int
-  let position: Position
-  
-  func string() -> String {
-    if key.isEmpty {
-      return ""
-    }
-    
-    let equals = hasEquals ? " = " : " "
-    
-    var line = "\(String(repeating: " ", count: leadingSpace))\(key)\(equals)\(value)"
-    if !comment.isEmpty {
-      line += " #\(comment)"
-    }
-    
-    return line
-  }
-}
-
-struct Include: Node {
-  var comment: String
-  var derectives: [String]
-  var position: Position
-  var matches: [String]
-  var files: [String: Config]
-  var leadingSpace: Int
-  var depth: Int
-  var hasEquals: Bool
-  
-  func string() -> String {
-    ""
-  }
-  
-}
 
 
 class Parser {
@@ -71,9 +12,13 @@ class Parser {
   
   private var _tokensBuffer = [Token]()
   private var _lexer: Lexer
+  private var _depth: UInt8
+  private var _system: Bool
   
-  init(input: String) {
+  init(input: String, depth: UInt8 = 0, system: Bool = false) {
     _lexer = Lexer(input: input)
+    _system = system
+    _depth = depth
   }
   
   private func _parseStart() throws -> State {
@@ -151,7 +96,17 @@ class Parser {
     
     let lastHost = config.hosts.last
     if value == "include" {
-      // todo include
+      let directives = val.value.split(separator: " ").map(String.init)
+      let inc = try Include(
+        directives: directives,
+        hasEquals: hasEquals,
+        position: key.position,
+        comment: comment,
+        system: _system,
+        depth: _depth + 1
+      )
+      
+      lastHost?.nodes.append(inc)
       return State(fn: _parseStart)
     }
     

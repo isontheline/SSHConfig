@@ -7,6 +7,7 @@ struct SSHConfig {
     case matchIsUnsupported
     case mustBeYesOrNo(key: String, value: String)
     case mustBeUInt(key: String, value: String)
+    case depthExceeded
   }
   
   var text = "Hello, World!"
