@@ -1,11 +1,11 @@
 import Foundation
 
 class Host {
-  var patterns: [Pattern] = []
+  var patterns = [Pattern]()
   var nodes = [Node]()
   var hasEquals = false
   var leadingSpace = 0
-  var implicit: Bool = false
+  var implicit = false
   var eolComment = ""
   
   init(patterns: [Pattern], implicit: Bool = false) {

@@ -67,4 +67,15 @@ struct Validators {
       throw SSHConfig.Err.mustBeUInt(key: key, value: val)
     }
   }
+
+  let pluralDirectives = Set(
+    [
+      "CertificateFile",
+      "IdentityFile",
+      "DynamicForward",
+      "RemoteForward",
+      "SendEnv",
+      "SetEnv"
+    ].map { $0.lowercased() }
+  )
 }

@@ -1,29 +1,40 @@
 import Foundation
 
-
-
 class Parser {
   
-  let config = Config()
+  static var homeURL = URL(string: "~")!
+  static var systemURL = URL(string: "/etc/ssh")
   
   private struct State  {
     let fn: (() throws -> State)?
   }
   
+  private let _config = SSHConfig()
   private var _tokensBuffer = [Token]()
+  private var _state: State? = nil
   private var _lexer: Lexer
   private var _depth: UInt8
   private var _system: Bool
+  private let _url: URL
   
-  init(input: String, depth: UInt8 = 0, system: Bool = false) {
+  init(url: URL, input: String, depth: UInt8 = 0, system: Bool = false) {
+    _url = url
     _lexer = Lexer(input: input)
     _system = system
     _depth = depth
+    _state = State(fn: _parseStart)
+  }
+  
+  convenience init(url: URL, depth: UInt8 = 0, system: Bool = false) throws {
+    let contents = try String(contentsOf: url)
+    self.init(url: url, input: contents, depth: depth, system: system)
   }
   
   private func _parseStart() throws -> State {
-    guard let tok = _peek()
+    guard
+      let tok = _peek()
     else {
+      // end of stream, parsing is finished
       return State(fn: nil)
     }
     
@@ -49,11 +60,12 @@ class Parser {
     var hasEquals = false
     
     if case TokenType.equals = val.type {
-      hasEquals = true
-      guard let v = _getToken()
+      guard
+        let v = _getToken()
       else {
         throw SSHConfig.Err.expectedToken
       }
+      hasEquals = true
       val = v
     }
     
@@ -75,12 +87,9 @@ class Parser {
     }
     
     if value == "host" {
-      let strPatterns = val.value.components(separatedBy: " ").map { String($0) }
       var patterns = [Pattern]()
-      for i in strPatterns {
-        if i.isEmpty {
-          continue
-        }
+      let strPatterns = val.value.split(separator: " ").map(String.init)
+      for i in strPatterns where !i.isEmpty {
         let pattern = try Pattern(str: i)
         patterns.append(pattern)
       }
@@ -89,15 +98,16 @@ class Parser {
       host.eolComment = comment
       host.hasEquals = hasEquals
       
-      config.hosts.append(host)
+      _config.hosts.append(host)
       
       return State(fn: _parseStart)
     }
     
-    let lastHost = config.hosts.last
+    let lastHost = _config.hosts.last
     if value == "include" {
       let directives = val.value.split(separator: " ").map(String.init)
       let inc = try Include(
+        baseURL: _url,
         directives: directives,
         hasEquals: hasEquals,
         position: key.position,
@@ -127,7 +137,7 @@ class Parser {
     guard let comment = _getToken() else {
       throw SSHConfig.Err.emptyPattern
     }
-    let lastHost = config.hosts.last
+    let lastHost = _config.hosts.last
     lastHost?.nodes.append(
       Empty(
         comment: comment.value,
@@ -162,13 +172,14 @@ class Parser {
     return nil
   }
   
-  func parse() throws -> Config {
-    var state: State? = State(fn: _parseStart)
-    while let s = state {
-      state = try s.fn?()
+  func parse() throws -> SSHConfig {
+    while let s = _state {
+      _state = try s.fn?()
     }
     
-    return config
+    _state = nil
+    
+    return _config
   }
   
 }

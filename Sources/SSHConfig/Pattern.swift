@@ -6,7 +6,8 @@ struct Pattern {
   let not: Bool // true if this is negative match
   
   init(str: String) throws {
-    if str.isEmpty {
+    guard !str.isEmpty
+    else {
       throw SSHConfig.Err.emptyPattern
     }
     
@@ -18,8 +19,8 @@ struct Pattern {
       chars.removeFirst()
     }
     
-    var buffer = [Character]("^")
-    let specialChars = [Character]("\\.+()|[]{}^$")
+    var buffer = Array("^")
+    let specialChars = Array("\\.+()|[]{}^$")
 
     for ch in chars {
       switch ch {
@@ -35,6 +36,7 @@ struct Pattern {
       }
     }
     buffer.append("$")
+    
     // TODO: validatate regexp
     
     self.regexp = String(buffer)

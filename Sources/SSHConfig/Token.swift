@@ -5,8 +5,8 @@ enum TokenType {
 }
 
 struct Position {
-  let line: Int
-  let col: Int
+  var line: Int
+  var col: Int
 
   func invalid() -> Bool {
     line <= 0 || col <= 0

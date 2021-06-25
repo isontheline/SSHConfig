@@ -2,13 +2,17 @@ import XCTest
 @testable import struct SSHConfig.Pattern
 @testable import class SSHConfig.Host
 @testable import class SSHConfig.Parser
+@testable import class SSHConfig.SSHConfig
+
+
+fileprivate func __fixtureURL(_ name: String) -> URL {
+  Bundle.module.url(forResource: name, withExtension: nil, subdirectory: "testdata")!
+}
 
 final class ParserTests: XCTestCase {
-  func testMatches() throws {
-    let identities = Bundle.module.url(forResource: "identities", withExtension: nil, subdirectory: "testdata")!
-    let content = try! String(contentsOf: identities)
-    let config = try! Parser(input: content).parse()
+  func testBaseParse() throws {
     
+    let config = try! Parser(url: __fixtureURL("identities")).parse()
     
     XCTAssertEqual(config.hosts.count, 4)
     
@@ -24,5 +28,36 @@ final class ParserTests: XCTestCase {
     config.hosts[1].set("no", forKey: "Compression")
     
     print(config.string())
+  }
+  
+  func testInclude() throws {
+    let config = try! Parser(url: __fixtureURL("include")).parse()
+    let cfg = try! config.resolve(alias: "wap")
+    
+    debugPrint(cfg)
+    print(config.string())
+  }
+  
+  func testThrowsOnMatch() throws {
+    let expectCatch = expectation(description: "catch")
+    do {
+      _ = try Parser(url: __fixtureURL("match-directive")).parse()
+    } catch SSHConfig.Err.matchIsUnsupported {
+      expectCatch.fulfill()
+    }
+    wait(for: [expectCatch], timeout: 0)
+  }
+  
+  func testDosLinesEndingDecode() throws {
+    let config = try Parser(url: __fixtureURL("dos-lines")).parse()
+    
+    XCTAssertEqual("root", try config.get(alias: "wap", key: "user"))
+  }
+  
+  func testNoTrailingNewline() throws {
+    let config = try Parser(url: __fixtureURL("config-no-ending-newline")).parse()
+    let port = try config.get(alias: "example", key: "Port")
+    
+    XCTAssertEqual(port, "4242")
   }
 }

@@ -1,15 +1,5 @@
 import Foundation
 
-fileprivate extension Character {
-  var isSSHKeyStartChar: Bool {
-    !(isWhitespace || self == "\r" || self == "\n")
-  }
-  
-  var isSSHKeyChar: Bool {
-    !(self == "\r" || self == "\n" || self == "=")
-  }
-}
-
 final class Lexer {
 
   private struct State  {
@@ -19,10 +9,8 @@ final class Lexer {
   private var _inputIdx = 0
   private var _input = [Character]()
   private var _buffer = [Character]()
-  private var _line = 1
-  private var _col = 1
-  private var _endBufferLine = 1
-  private var _endBufferCol = 1
+  private var _pos = Position(line: 1, col: 1)
+  private var _endBufferPos = Position(line: 1, col: 1)
   private var _state: State? = nil
   
   private var _emittedTokens = [Token]()
@@ -34,17 +22,17 @@ final class Lexer {
   
   private func _lexComment(previosState: State) -> State {
     State { [self] in
-      var growingString = ""
+      var growingChars = [Character]()
       
       var next = _peek()
-      while let n = next, n != "\n" {
-        if n == "\r" && _follow("\r\n") {
-          break
-        }
-        
-        growingString += String(n)
-        next = _next()
+      while let n = next, !n.isNewline {
+        growingChars.append(n)
+        _ = _next()
+        next = _peek()
       }
+      
+      _emit(tokenType: .comment, withValue: growingChars)
+      _skip()
       
       return previosState
     }
@@ -61,7 +49,9 @@ final class Lexer {
       case "#":
         _skip()
         return _lexComment(previosState: State(fn: _lexVoid))
-      case "\r", "\n":
+      case "\r\n":
+        fallthrough
+      case "\n":
         _emit(tokenType: .emptyLine)
         _skip()
         continue
@@ -84,21 +74,21 @@ final class Lexer {
 
   private func _lexKey() -> State {
     State { [self] in
-      var growingString = ""
+      var growingChars = [Character]()
       
       var ch = _peek()
       while let c = ch, c.isSSHKeyChar {
         if c.isWhitespace || c == "=" {
-          _emitWithValue(tokenType: .key, value: growingString)
+          _emit(tokenType: .key, withValue: growingChars)
           _skip()
           return State(fn: _lexEquals)
         }
         
-        growingString += String(c)
+        growingChars.append(c)
         _ = _next()
         ch = _peek()
       }
-      _emitWithValue(tokenType: .key, value: growingString)
+      _emit(tokenType: .key, withValue: growingChars)
       return State(fn: _lexEquals)
     }
   }
@@ -122,7 +112,7 @@ final class Lexer {
   }
   
   private func _lexRValue() -> State {
-    var growingString = ""
+    var growingChars = [Character]()
     while true {
       guard let next = _peek()
       else {
@@ -131,18 +121,14 @@ final class Lexer {
       }
       
       switch next {
-      case "\r":
-        if _follow("\r\n") {
-          _emitWithValue(tokenType: .string, value: growingString)
-          _skip()
-          return State(fn: _lexVoid)
-        }
+      case "\r\n":
+        fallthrough
       case "\n":
-        _emitWithValue(tokenType: .string, value: growingString)
+        _emit(tokenType: .string, withValue: growingChars)
         _skip()
         return State(fn: _lexVoid)
       case "#":
-        _emitWithValue(tokenType: .string, value: growingString)
+        _emit(tokenType: .string, withValue: growingChars)
         _skip()
         return _lexComment(previosState: State(fn: _lexVoid))
       case nil:
@@ -151,7 +137,7 @@ final class Lexer {
         break
       }
       
-      growingString += String(next)
+      growingChars.append(next)
       _ = _next()
     }
     
@@ -161,34 +147,19 @@ final class Lexer {
   }
   
   private func _lexRSpace() -> State {
-    while let next = _peek() {
-      if !next.isWhitespace {
-        break
-      }
-      
+    while let next = _peek(), next.isWhitespace {
       _skip()
     }
     
     return State(fn: _lexRValue)
   }
   
-  private func _follow(_ next: String) -> Bool {
-    var idx = _inputIdx
-    
-    for expectedChar in Array(next) {
-      if idx >= _input.count {
-        return false
-      }
-      
-      let ch = _input[idx]
-      idx += 1
-      if ch != expectedChar {
-        return false
-      }
-    }
-    return true
-  }
+}
 
+// MARK: - Tools
+
+extension Lexer {
+  
   private func _peek() -> Character? {
     guard _inputIdx < _input.count
     else {
@@ -201,10 +172,10 @@ final class Lexer {
   private func _read() -> Character? {
     let ch = _peek()
     if ch == "\n" {
-      _endBufferLine += 1
-      _endBufferCol = 1
+      _endBufferPos.line += 1
+      _endBufferPos.col = 1
     } else {
-      _endBufferCol += 1
+      _endBufferPos.col += 1
     }
 
     _inputIdx += 1
@@ -223,8 +194,7 @@ final class Lexer {
 
   private func _ignore() {
     _buffer = []
-    _line = _endBufferLine
-    _col = _endBufferCol
+    _pos = _endBufferPos
   }
 
   private func _skip() {
@@ -233,14 +203,14 @@ final class Lexer {
   }
 
   private func _emit(tokenType: TokenType) {
-    _emitWithValue(tokenType: tokenType, value: String(_buffer))
+    _emit(tokenType: tokenType, withValue: _buffer)
   }
 
-  private func _emitWithValue(tokenType: TokenType, value: String) {
+  private func _emit(tokenType: TokenType, withValue value: [Character]) {
     let token = Token(
-      position: Position(line: _line, col: _col),
+      position: _pos,
       type: tokenType,
-      value: value
+      value: String(value)
     )
 
     _emittedTokens.append(token)
@@ -258,5 +228,16 @@ final class Lexer {
     _state = nil
     
     return _emittedTokens
+  }
+}
+
+
+fileprivate extension Character {
+  var isSSHKeyStartChar: Bool {
+    !(isWhitespace || self == "\r" || self == "\n")
+  }
+  
+  var isSSHKeyChar: Bool {
+    !(self == "\r" || self == "\n" || self == "=")
   }
 }
