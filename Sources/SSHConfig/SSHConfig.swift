@@ -15,6 +15,10 @@ public class SSHConfig {
   internal var depth = 0
   internal var position = Position(line: 1, col: 1)
   
+  public init() {
+    
+  }
+  
   public func add(alias: String, cfg: [(String, Any)], comment: String = "") throws {
     let pattern = try Pattern(str: alias)
     let host = Host(patterns: [pattern])
@@ -124,7 +128,7 @@ public class SSHConfig {
     return resolved
   }
   
-  func string() -> String {
+  public func string() -> String {
     hosts.map{ $0.string() }.joined(separator: "")
   }
 }

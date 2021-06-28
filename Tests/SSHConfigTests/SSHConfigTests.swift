@@ -6,7 +6,7 @@ final class SSHConfigTests: XCTestCase {
     
     let config = SSHConfig()
     try config.add(alias: "office", cfg: [
-      ("host", "192.168.135.2"),
+      ("Hostname", "192.168.135.2"),
       ("user", "yury"),
       ("port", 33),
       ("Compression", true)
@@ -15,9 +15,9 @@ final class SSHConfigTests: XCTestCase {
     )
     
     try config.add(alias: "office2", cfg: [
-      ("host", "192.168.135.3"),
+      ("Hostname", "192.168.135.3"),
       ("user", "yury"),
-      ("identity", "id_rsa")
+      ("identityfile", "id_rsa")
     ],
     comment: " Blink Host"
     )
@@ -27,15 +27,15 @@ final class SSHConfigTests: XCTestCase {
     XCTAssertEqual(str,
 """
 Host office # Blink Host
-  host 192.168.135.2
+  Hostname 192.168.135.2
   user yury
   port 33
   Compression yes
 
 Host office2 # Blink Host
-  host 192.168.135.3
+  Hostname 192.168.135.3
   user yury
-  identity id_rsa
+  identityfile id_rsa
 
 
 """
