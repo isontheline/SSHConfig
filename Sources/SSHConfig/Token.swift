@@ -17,7 +17,7 @@ struct Position {
   }
 }
 
-struct Token {
+public struct Token {
   let position: Position
   let type: TokenType
   let value: String

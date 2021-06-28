@@ -39,6 +39,20 @@ class Host {
       }
     }
     
+    let kv = KV(
+      key: key,
+      value: value,
+      comment: "",
+      hasEquals: false,
+      leadingSpace: leadingSpace + 2,
+      position: Position(line: 1, col: 1)
+    )
+    
+    if nodes.isEmpty {
+      nodes.append(kv)
+      return
+    }
+    
     var lastNonEmpty = -1
     for n in nodes {
       if let _ = n as? Empty {
@@ -47,14 +61,7 @@ class Host {
       lastNonEmpty += 1
     }
     
-    nodes.insert(KV(
-      key: key,
-      value: value,
-      comment: "",
-      hasEquals: false,
-      leadingSpace: leadingSpace + 2,
-      position: Position(line: 1, col: 1)
-    ), at: lastNonEmpty + 1)
+    nodes.insert(kv, at: lastNonEmpty + 1)
   }
   
   func string() -> String {

@@ -1,7 +1,7 @@
 import Foundation
 
-class SSHConfig {
-  enum Err: Error {
+public class SSHConfig {
+  public enum Err: Error {
     case emptyPattern
     case unexpected(token: Token)
     case expectedToken
@@ -11,9 +11,38 @@ class SSHConfig {
     case includeDepthExceeded
   }
   
-  var hosts = [Host(patterns: [.matchAll()], implicit: true)]
-  var depth = 0
-  var position = Position(line: 1, col: 1)
+  internal var hosts = [Host(patterns: [.matchAll()], implicit: true)]
+  internal var depth = 0
+  internal var position = Position(line: 1, col: 1)
+  
+  public func add(alias: String, cfg: [(String, Any)], comment: String = "") throws {
+    let pattern = try Pattern(str: alias)
+    let host = Host(patterns: [pattern])
+    host.nodes.append(Empty(comment: "", leadingSpace: 2, position: position))
+    
+    host.eolComment = comment
+    for (key, value) in cfg {
+      if let v = value as? String {
+        host.set(v, forKey: key)
+      }
+      else if let arr = value as? [String] {
+        for v in arr {
+          host.set(v, forKey: key)
+        }
+      }
+      else if let bool = value as? Bool {
+        host.set(bool ? "yes" : "no", forKey: key)
+      }
+      else if let uint = value as? UInt {
+        host.set(String(uint), forKey: key)
+      }
+      else if let int = value as? Int {
+        host.set(String(int), forKey: key)
+      }
+    }
+    
+    hosts.append(host)
+  }
   
   func get(alias: String, key: String) throws -> String {
     
