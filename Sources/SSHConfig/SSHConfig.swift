@@ -52,7 +52,7 @@ public class SSHConfig {
     hosts.append(host)
   }
   
-  func get(alias: String, key: String) throws -> String {
+  public func get(alias: String, key: String) throws -> String {
     
     let lowerKey = key.lowercased()
     for host in hosts where host.matches(alias: alias) {
@@ -78,7 +78,7 @@ public class SSHConfig {
     return ""
   }
   
-  func getAll(alias: String, key: String) throws -> [String] {
+  public func getAll(alias: String, key: String) throws -> [String] {
     let lowerKey = key.lowercased()
     var all = [String]()
     
@@ -103,7 +103,7 @@ public class SSHConfig {
     return all
   }
   
-  func resolve(alias: String) throws -> [String: Any] {
+  public func resolve(alias: String) throws -> [String: Any] {
     let validators = Validators()
 
     var resolved = [String: Any] ()
