@@ -19,6 +19,10 @@ public class SSHConfig {
     
   }
   
+  public static func parse(url: URL) throws -> SSHConfig {
+    try Parser(url: url).parse()
+  }
+  
   public func add(alias: String, cfg: [(String, Any)], comment: String = "") throws {
     let pattern = try Pattern(str: alias)
     let host = Host(patterns: [pattern])

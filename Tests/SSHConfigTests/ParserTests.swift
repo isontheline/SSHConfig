@@ -12,7 +12,7 @@ fileprivate func __fixtureURL(_ name: String) -> URL {
 final class ParserTests: XCTestCase {
   func testBaseParse() throws {
     
-    let config = try! Parser(url: __fixtureURL("identities")).parse()
+    let config = try! SSHConfig.parse(url: __fixtureURL("identities"))
     
     XCTAssertEqual(config.hosts.count, 4)
     
