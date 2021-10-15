@@ -1,4 +1,4 @@
 # Extra space at end of line is important.
 Host wap     
   User root
-  KexAlgorithms diffie-hellman-group1-sha1
+  KexAlgorithms diffie-hellman-group-exchange-sha256

@@ -41,5 +41,15 @@ Host office2 # Blink Host
 """
     )
   }
+  
+  func testResolve() {
+    let config = try! SSHConfig.parse(url: fixtureURL("include"))
+    var resolved = try! config.resolve(alias: "10.0.0.1")
+    XCTAssertEqual(resolved["port"] as! String, "23")
+    
+    resolved = try! config.resolve(alias: "wap")
+    XCTAssertEqual(resolved["user"] as! String, "root")
+    XCTAssertEqual(resolved["kexalgorithms"] as! String, "diffie-hellman-group1-sha1")
+  }
 }
 

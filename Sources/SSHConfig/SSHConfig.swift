@@ -118,14 +118,14 @@ public class SSHConfig {
           } else {
             if validators.pluralDirectives.contains(lkey) {
               resolved[lkey] = [kv.value]
-            } else {
+            } else if resolved[lkey] == nil {
               resolved[lkey] = kv.value
             }
           }
         }
         else if let inc = node as? Include {
           let res = try inc.resolve(alias: alias)
-          resolved.addValues(from: res)
+          resolved.mergeWithSSHConfigRules(res)
         }
       }
     }

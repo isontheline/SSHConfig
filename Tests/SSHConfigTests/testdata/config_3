@@ -8,6 +8,7 @@ Host bastion.*.i.*.example.net
 Host 10.*
   User simon.thulbourn
   Port 23
+  Port 24
   ForwardAgent yes
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
