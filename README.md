@@ -1,3 +1,5 @@
 # SSHConfig
 
-ssh config manipulation library
+SSH config manipulation library
+
+See test for usage.
