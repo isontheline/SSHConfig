@@ -2,4 +2,4 @@
 
 SSH config manipulation library
 
-See test for usage.
+See tests for usage.
