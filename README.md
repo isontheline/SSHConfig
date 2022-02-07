@@ -1,3 +1,5 @@
 # SSHConfig
 
-A description of this package.
+SSH config manipulation library
+
+See tests for usage.
