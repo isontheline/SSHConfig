@@ -9,10 +9,9 @@ import Foundation
 
 public extension Dictionary where Key == String, Value == Any {
   mutating func mergeWithSSHConfigRules(_ dict: Dictionary) {
-    let validators = Validators()
     
     for (k, v) in dict {
-      let plural = validators.pluralDirectives.contains(k)
+      let plural = Validators.pluralDirectives.contains(k)
       if plural {
         if let currentValue = self[k] as? [String] {
           if let arr = v as? [String] {

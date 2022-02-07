@@ -29,12 +29,14 @@ class Host {
   
   func set(_ value: String, forKey key: String) {
     let lkey = key.lowercased()
-    for (i, n) in nodes.enumerated() {
-      if var kv = n as? KV {
-        if lkey == kv.key.lowercased() {
-          kv.value = value
-          nodes[i] = kv
-          return
+    if !Validators.pluralDirectives.contains(lkey) {
+      for (i, n) in nodes.enumerated() {
+        if var kv = n as? KV {
+          if lkey == kv.key.lowercased() {
+            kv.value = value
+            nodes[i] = kv
+            return
+          }
         }
       }
     }

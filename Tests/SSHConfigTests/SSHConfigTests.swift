@@ -51,5 +51,16 @@ Host office2 # Blink Host
     XCTAssertEqual(resolved["user"] as! String, "root")
     XCTAssertEqual(resolved["kexalgorithms"] as! String, "diffie-hellman-group1-sha1")
   }
+  
+  func testAdd() throws {
+    let config = try! SSHConfig.parse(url: fixtureURL("include"))
+    try config.add(alias: "192.168.135.2", cfg: [("RemoteForward", "8080:google.com:8080")])
+    try config.add(alias: "192.168.135.2", cfg: [("LocalForward", "8080:localhost:8080")])
+    try config.add(alias: "192.168.135.2", cfg: [("LocalForward", "8081:localhost:8081")])
+    var resolved = try! config.resolve(alias: "192.168.135.2")
+    print(resolved)
+    let localForwards = resolved["localforward"] as! [String]
+    XCTAssertEqual(localForwards.count, 2)
+  }
 }
 

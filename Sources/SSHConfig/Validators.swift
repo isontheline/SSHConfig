@@ -68,12 +68,13 @@ struct Validators {
     }
   }
 
-  let pluralDirectives = Set(
+  static var pluralDirectives = Set(
     [
       "CertificateFile",
       "IdentityFile",
       "DynamicForward",
       "RemoteForward",
+      "LocalForward",
       "SendEnv",
       "SetEnv"
     ].map { $0.lowercased() }

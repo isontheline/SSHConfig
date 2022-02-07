@@ -104,8 +104,6 @@ public class SSHConfig {
   }
   
   public func resolve(alias: String) throws -> [String: Any] {
-    let validators = Validators()
-
     var resolved = [String: Any] ()
     for host in hosts where host.matches(alias: alias) {
       for node in host.nodes {
@@ -116,7 +114,7 @@ public class SSHConfig {
             v.append(kv.value)
             resolved[lkey] = v
           } else {
-            if validators.pluralDirectives.contains(lkey) {
+            if Validators.pluralDirectives.contains(lkey) {
               resolved[lkey] = [kv.value]
             } else if resolved[lkey] == nil {
               resolved[lkey] = kv.value
