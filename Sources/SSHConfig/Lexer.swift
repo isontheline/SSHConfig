@@ -131,8 +131,6 @@ final class Lexer {
         _emit(tokenType: .string, withValue: growingChars)
         _skip()
         return _lexComment(previosState: State(fn: _lexVoid))
-      case nil:
-        _ = _next()
       case _:
         break
       }
