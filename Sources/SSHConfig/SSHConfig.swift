@@ -121,6 +121,15 @@ public class SSHConfig {
             }
           }
         }
+        else if let empty = node as? Empty {
+          if empty.comment.hasPrefix("!") {
+            let comment = String(empty.comment.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines)
+            let parts = comment.split(separator: " ", maxSplits: 1)
+            let key = "_" + String(parts[0]).lowercased()
+            let value = parts.count > 1 ? String(parts[1]) : ""
+            resolved[key] = value
+          }
+        }
         else if let inc = node as? Include {
           let res = try inc.resolve(alias: alias)
           resolved.mergeWithSSHConfigRules(res)

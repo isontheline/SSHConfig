@@ -57,10 +57,17 @@ Host office2 # Blink Host
     try config.add(alias: "192.168.135.2", cfg: [("RemoteForward", "8080:google.com:8080")])
     try config.add(alias: "192.168.135.2", cfg: [("LocalForward", "8080:localhost:8080")])
     try config.add(alias: "192.168.135.2", cfg: [("LocalForward", "8081:localhost:8081")])
-    var resolved = try! config.resolve(alias: "192.168.135.2")
+    let resolved = try! config.resolve(alias: "192.168.135.2")
     print(resolved)
     let localForwards = resolved["localforward"] as! [String]
     XCTAssertEqual(localForwards.count, 2)
   }
-}
 
+  func testSpecialComments() throws {
+    let config = try! SSHConfig.parse(url: fixtureURL("special_comments"))
+    let resolved = try! config.resolve(alias: "ANY")
+
+    XCTAssertEqual(resolved["_fontsize"] as! String, "20")
+    XCTAssertEqual(resolved["_emptyvalue"] as! String, "")
+  }
+}
