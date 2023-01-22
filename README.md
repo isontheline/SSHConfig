@@ -1,3 +1,5 @@
+Forked from the awesome [yury/SSHConfig](https://github.com/yury/SSHConfig)
+
 # SSHConfig
 SSH config manipulation library
 
