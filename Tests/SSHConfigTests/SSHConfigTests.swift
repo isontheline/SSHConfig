@@ -7,7 +7,7 @@ final class SSHConfigTests: XCTestCase {
     let config = SSHConfig()
     try config.add(alias: "office", cfg: [
       ("Hostname", "192.168.135.2"),
-      ("user", "yury"),
+      ("user", "yury korolev"),
       ("port", 33),
       ("Compression", true)
     ],
@@ -16,7 +16,7 @@ final class SSHConfigTests: XCTestCase {
     
     try config.add(alias: "office2", cfg: [
       ("Hostname", "192.168.135.3"),
-      ("user", "yury"),
+      ("user", "yury korolev"),
       ("identityfile", "id_rsa")
     ],
     comment: " Blink Host"
@@ -28,13 +28,13 @@ final class SSHConfigTests: XCTestCase {
 """
 Host office # Blink Host
   Hostname 192.168.135.2
-  user yury
+  user yury korolev
   port 33
   Compression yes
 
 Host office2 # Blink Host
   Hostname 192.168.135.3
-  user yury
+  user yury korolev
   identityfile id_rsa
 
 
