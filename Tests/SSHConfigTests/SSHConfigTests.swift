@@ -70,4 +70,10 @@ Host office2 # Blink Host
     XCTAssertEqual(resolved["_fontsize"] as! String, "20")
     XCTAssertEqual(resolved["_emptyvalue"] as! String, "")
   }
+
+  func testAliases() throws {
+    let config = try! SSHConfig.parse(url: fixtureURL("config_3"))
+    let aliases = config.aliases()
+    XCTAssertEqual(aliases.count, 5)
+  }
 }

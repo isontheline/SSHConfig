@@ -138,6 +138,17 @@ public class SSHConfig {
     }
     return resolved
   }
+
+  public func aliases() -> [String] {
+    var aliases : [String] = []
+    for host in hosts {
+      for pattern in host.patterns {
+        aliases.append(pattern.str)
+      }
+    }
+
+    return aliases
+  }
   
   public func string() -> String {
     hosts.map{ $0.string() }.joined(separator: "")
